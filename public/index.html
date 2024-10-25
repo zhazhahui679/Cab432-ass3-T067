@@ -68,20 +68,84 @@
         </form>      
 
         <!-- Delete Image from S3 Form -->
-        <h2 class="mt-5">Delete Image from Database</h2>
         <form id="deleteForm" class="mt-4">
+            <h2>Delete Image from Database</h2>
             <div class="form-group">
-                <label for="filename">Select Image to Delete:</label>
-                <select id="filename" name="filename" class="form-control" required>
+                <label for="delete_key">Select Image to Delete:</label>
+                <select id="delete_key" name="key" class="form-control" required>
                     <option value="">Select an image...</option>
-                    <!-- Options will be populated here from image keys -->
+                    <!-- Options will be populated here -->
                 </select>
             </div>
             <button type="submit" class="btn btn-danger">Delete</button>
-        </form>
+        </form> 
+
+
     </div>
 
     <!-- Script to handle form submission and redirect -->
+    <script>
+        document.getElementById('deleteForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const form = e.target;
+            const formData = new FormData(form);
+            
+            try {
+                const response = await fetch('/images/delete', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    // Alert successful message or redirect
+                    alert('Files deleted successfully');
+                    window.location.href = '/';  // Redirect to index page or wherever you want
+                } else {
+                    console.error('File conversion failed:', result.message);
+                    alert('Failed to delete the files.');
+                }
+            } catch (error) {
+                console.error('Error during deletion:', error);
+                alert('An error occurred during the deletion.');
+            }
+        });
+    </script>
+
+    <script>
+        document.getElementById('convertForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const form = e.target;
+            const formData = new FormData(form);
+            
+            try {
+                const response = await fetch('/images/convert', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    // Alert successful message or redirect
+                    alert('Files converted successfully');
+                    window.location.href = '/';  // Redirect to index page or wherever you want
+                } else {
+                    console.error('File conversion failed:', result.message);
+                    alert('Failed to convert the files.');
+                }
+            } catch (error) {
+                console.error('Error during convertion:', error);
+                alert('An error occurred during the convertion.');
+            }
+        });
+    </script>
+
+
+
     <script>
         document.getElementById('uploadForm').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -116,6 +180,34 @@
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             const selectElementKey = document.getElementById('key');
+            const selectElementFilename = document.getElementById('filename');
+
+            try {
+                const response = await fetch('/images/image-keys');
+                const result = await response.json();
+
+                if (response.ok && result.keys.length) {
+                    result.keys.forEach(key => {
+                        const optionKey = document.createElement('option');
+                        optionKey.value = key;
+                        optionKey.textContent = key;
+
+                        const optionFilename = optionKey.cloneNode(true);
+
+                        selectElementKey.appendChild(optionKey);
+                        selectElementFilename.appendChild(optionFilename);
+                    });
+                } else {
+                    console.error('Failed to fetch image keys:', result.message);
+                }
+            } catch (error) {
+                console.error('Error fetching image keys:', error);
+            }
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const selectElementKey = document.getElementById('delete_key');
             const selectElementFilename = document.getElementById('filename');
 
             try {

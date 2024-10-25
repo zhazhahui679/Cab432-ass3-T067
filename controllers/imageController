@@ -140,11 +140,14 @@ const convertImage = async (req, res) => {
       .toBuffer();
 
     const outputKey = key.replace(/\.\w+$/, `.${format}`);
+    const outputKey2 = outputKey.replace('uploads/','converted_image/');
+
+//    const outputKey = `ConvertedImage/${key.replace(/\.\w+$/, `.${format}`)}`;
     
     // Upload the converted image back to S3
     const uploadParams = {
       Bucket: BUCKET_NAME,
-      Key: outputKey,
+      Key: outputKey2,
       Body: convertedImageBuffer,
       ContentType: `image/${format}`,
     };
@@ -179,22 +182,44 @@ const getImageKeys = async (req, res) => {
 };
 
 const deleteImage = async (req, res) => {
+  console.log("deleteImage function is called")
   const { key } = req.body;
   if (!key) return res.status(400).json({ message: "Image key is required" });
 
   try {
     // Delete the image from S3
+    console.log("Deleting image from S3");
+ //   console.log(key);
     const deleteParams = { Bucket: BUCKET_NAME, Key: key };
-    await s3.send(new DeleteObjectCommand(deleteParams));
+    console.log("Delete Param = ");
+//    console.log(deleteParams);
 
+//    await s3.send(new DeleteObjectCommand(deleteParams));
+    console.log("file deleted from S3");
     // Delete the metadata from DynamoDB
+
+//    const dbDeleteParams = {
+//      TableName: tableName,
+//      Key: {
+//        "file-key": { S: key },
+//        "qut-username": { S: "n11543701@qut.edu.au" }
+//      }
+//    };
+
+
     const dbDeleteParams = {
-      TableName: tableName,
-      Key: {
-        "file-key": { S: key }
-      }
+      "Key": {
+          "qut-username": { "S": "n11543701@qut.edu.au" },
+          "file-key": { "S": key },
+      },
+      "TableName":tableName
     };
+
+
+    console.log("dbDeletParam = ");
+    console.log(dbDeleteParams);
     await dynamoDB.send(new DeleteItemCommand(dbDeleteParams));
+    console.log("file key deleted from database.");
 
     res.status(200).json({ message: "Image deleted successfully", key });
   } catch (error) {
