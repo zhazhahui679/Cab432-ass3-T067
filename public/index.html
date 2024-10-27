@@ -72,7 +72,7 @@
             <h2>Delete Image from Database</h2>
             <div class="form-group">
                 <label for="delete_key">Select Image to Delete:</label>
-                <select id="delete_key" name="key" class="form-control" required>
+                <select id="delete_key" name="delete_key" class="form-control" required>
                     <option value="">Select an image...</option>
                     <!-- Options will be populated here -->
                 </select>
@@ -105,7 +105,7 @@
                     window.location.href = '/';  // Redirect to index page or wherever you want
                 } else {
                     console.error('File conversion failed:', result.message);
-                    alert('Failed to delete the files.');
+                    alert( result.message);
                 }
             } catch (error) {
                 console.error('Error during deletion:', error);
@@ -180,8 +180,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             const selectElementKey = document.getElementById('key');
-            const selectElementFilename = document.getElementById('filename');
-
+            
             try {
                 const response = await fetch('/images/image-keys');
                 const result = await response.json();
@@ -192,12 +191,9 @@
                         optionKey.value = key;
                         optionKey.textContent = key;
 
-                        const optionFilename = optionKey.cloneNode(true);
-
                         selectElementKey.appendChild(optionKey);
-                        selectElementFilename.appendChild(optionFilename);
-                    });
-                } else {
+                        });                
+                    } else {
                     console.error('Failed to fetch image keys:', result.message);
                 }
             } catch (error) {
@@ -208,7 +204,6 @@
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             const selectElementKey = document.getElementById('delete_key');
-            const selectElementFilename = document.getElementById('filename');
 
             try {
                 const response = await fetch('/images/image-keys');
@@ -216,14 +211,12 @@
 
                 if (response.ok && result.keys.length) {
                     result.keys.forEach(key => {
+
                         const optionKey = document.createElement('option');
                         optionKey.value = key;
                         optionKey.textContent = key;
 
-                        const optionFilename = optionKey.cloneNode(true);
-
                         selectElementKey.appendChild(optionKey);
-                        selectElementFilename.appendChild(optionFilename);
                     });
                 } else {
                     console.error('Failed to fetch image keys:', result.message);

@@ -40,16 +40,24 @@ const streamToBuffer = (stream) => {
 
 // Upload image function
 const uploadImage = async (req, res) => {
-  console.log(req.files);  // Check if files are being received
+
+//  console.log(req.files);  // Check if files are being received
   
   if (!req.files || !req.files.files) {
     return res.status(400).json({ message: "No files were uploaded" });
   }
 
   const files = Array.isArray(req.files.files) ? req.files.files : [req.files.files];
+  
   const uploadPromises = files.map(async (file) => {
     const fileKey = `uploads/${shortid.generate()}-${file.name}`;
+//    const tmpFilePath = path.join(__dirname, "..", "tmp", file.name);
+
     try {
+      // Save file to tmp folder
+//      await fs.writeFile(tmpFilePath, file.data);
+
+      // Upload to S3
       const uploadParams = {
         Bucket: BUCKET_NAME,
         Key: fileKey,
@@ -60,14 +68,14 @@ const uploadImage = async (req, res) => {
       const metadata = {
         "qut-username": { S: "n11543701@qut.edu.au" },
         "image-id": { S: shortid.generate() },
-        "file-name": { S: file.name },
         "file-key": { S: fileKey },
+        "file-name": { S: file.name },
         "upload-date": { S: new Date().toISOString() },
       };
       const dbParams = { TableName: tableName, Item: metadata };
       await dynamoDB.send(new PutItemCommand(dbParams));
 
-      return { id: metadata["image-id"].S, key: fileKey, name: file.name };
+      return { id: metadata["file-key"].S, key: fileKey, name: file.name };
     } catch (err) {
       console.error("Error uploading file or storing metadata:", err);
       throw { message: "File Upload Failed", error: err };
@@ -85,39 +93,66 @@ const uploadImage = async (req, res) => {
 
 // Convert video to GIF function
 const convertVideoToGif = async (req, res) => {
-  const { key } = req.body;
-  if (!key) return res.status(400).json({ message: "Video key is required" });
+
+  const { key, format } = req.body;
+  
+  if (!key) return res.status(400).json({ message: "Image/Video file is required" });
+  if (!format) return res.status(400).json({ message: "Target format is required" });
+
 
   try {
     const params = { Bucket: BUCKET_NAME, Key: key };
     const data = await s3.send(new GetObjectCommand(params));
     const videoBuffer = await streamToBuffer(data.Body);
 
-    const outputGifKey = key.replace(/\.\w+$/, '.gif');
-    const outputGifPath = `/tmp/${outputGifKey}`;
+    const input_file = key.replace('uploads/', '');
+    await fs.writeFile(input_file, videoBuffer);
+
+  
+    const outputKey = input_file.replace(/\.\w+$/, `.gif`);
 
     await new Promise((resolve, reject) => {
       ffmpeg()
-        .input(videoBuffer)
+        .input(input_file)
         .toFormat('gif')
-        .output(outputGifPath)
+        .output(outputKey)
         .on('end', resolve)
         .on('error', reject)
         .run();
     });
 
-    const gifBuffer = await fs.readFile(outputGifPath);
+    const gifBuffer = await fs.readFile(outputKey);
+
+//    const outputKey2 = outputKey.concat('converted_image/', outputKey);
+    const outputKey2 = 'converted_image/' + outputKey;
+
     const uploadParams = {
       Bucket: BUCKET_NAME,
-      Key: outputGifKey,
+      Key: outputKey2,
       Body: gifBuffer,
-      ContentType: 'image/gif',
-    };
-    await s3.send(new PutObjectCommand(uploadParams));
+      ContentType: `image/gif`,
+      };
+  
+        // Upload the converted image to S3
+      await s3.send(new PutObjectCommand(uploadParams));
 
-    await fs.unlink(outputGifPath);  // Clean up temporary file
+      // Clean up temporary file
+      await fs.unlink(outputKey);  
+      await fs.unlink(input_file);
 
-    res.status(200).json({ message: "Video converted to GIF successfully", key: outputGifKey });
+
+            // Store metadata in DynamoDB
+            const metadata = {
+              "qut-username": { S: "n11543701@qut.edu.au" },
+              "image-id": { S: shortid.generate() },
+              "file-key": { S: outputKey2 },
+              "file-name": { S: path.basename(outputKey2) },
+              "upload-date": { S: new Date().toISOString() },
+            };
+            const dbParams = { TableName: tableName, Item: metadata };
+            await dynamoDB.send(new PutItemCommand(dbParams));
+
+    res.status(200).json({ message: "Video converted to GIF successfully", key: outputKey2 });
   } catch (error) {
     console.error("Error converting video to GIF:", error);
     res.status(500).json({ message: "Error converting video to GIF", error: error.message });
@@ -125,43 +160,61 @@ const convertVideoToGif = async (req, res) => {
 };
 
 const convertImage = async (req, res) => {
-  const { key, format } = req.body;
-  if (!key || !format) return res.status(400).json({ message: "Image key and target format are required" });
-
-  try {
-    // Fetch image from S3
-    const params = { Bucket: BUCKET_NAME, Key: key };
-    const data = await s3.send(new GetObjectCommand(params));
-    const imageBuffer = await streamToBuffer(data.Body);
-
-    // Convert the image using sharp
-    const convertedImageBuffer = await sharp(imageBuffer)
-      .toFormat(format)
-      .toBuffer();
-
-    const outputKey = key.replace(/\.\w+$/, `.${format}`);
-    const outputKey2 = outputKey.replace('uploads/','converted_image/');
-
-//    const outputKey = `ConvertedImage/${key.replace(/\.\w+$/, `.${format}`)}`;
-    
-    // Upload the converted image back to S3
-    const uploadParams = {
-      Bucket: BUCKET_NAME,
-      Key: outputKey2,
-      Body: convertedImageBuffer,
-      ContentType: `image/${format}`,
-    };
-    await s3.send(new PutObjectCommand(uploadParams));
-
-    // Return the new image key
-    res.status(200).json({ message: "Image converted successfully", key: outputKey });
-  } catch (error) {
-    console.error("Error converting image:", error);
-    res.status(500).json({ message: "Error converting image", error: error.message });
-  }
-};
+    const { key, format } = req.body;
+  
+    if (!key) return res.status(400).json({ message: "Image/Video file is required" });
+    if (!format) return res.status(400).json({ message: "Target format is required" });
+  
+    try {
+      // Fetch image/video from S3
+      const params = { Bucket: BUCKET_NAME, Key: key };
+      const data = await s3.send(new GetObjectCommand(params));
+  
+      if (format === 'gif') {
+        // Assume it's a video and use convertVideoToGif function
+        await convertVideoToGif(req, res);
+        return;
+      } else {
+        // Convert image using sharp
+        const imageBuffer = await streamToBuffer(data.Body);
+        const convertedImageBuffer = await sharp(imageBuffer)
+          .toFormat(format)
+          .toBuffer();
+  
+        const outputKey = key.replace(/\.\w+$/, `.${format}`);
+        const outputKey2 = outputKey.replace('uploads/', 'converted_image/');
+        const uploadParams = {
+          Bucket: BUCKET_NAME,
+          Key: outputKey2,
+          Body: convertedImageBuffer,
+          ContentType: `image/${format}`,
+        };
+  
+        // Upload the converted image to S3
+        await s3.send(new PutObjectCommand(uploadParams));
+  
+        // Store metadata in DynamoDB
+        const metadata = {
+          "qut-username": { S: "n11543701@qut.edu.au" },
+          "image-id": { S: shortid.generate() },
+          "file-key": { S: outputKey2 },
+          "file-name": { S: path.basename(outputKey2) },
+          "upload-date": { S: new Date().toISOString() },
+        };
+        const dbParams = { TableName: tableName, Item: metadata };
+        await dynamoDB.send(new PutItemCommand(dbParams));
+  
+        // Return the new image key
+        res.status(200).json({ message: "Image converted successfully", key: outputKey2 });
+      }
+    } catch (error) {
+      console.error("Error converting image:", error);
+      res.status(500).json({ message: "Error converting image", error: error.message });
+    }
+};  
 
 const getImageKeys = async (req, res) => {
+  
   try {
     const params = {
       TableName: tableName,
@@ -182,19 +235,21 @@ const getImageKeys = async (req, res) => {
 };
 
 const deleteImage = async (req, res) => {
-  console.log("deleteImage function is called")
-  const { key } = req.body;
-  if (!key) return res.status(400).json({ message: "Image key is required" });
+  console.log("deleteImage function is called");
 
+    const { delete_key } = req.body;
+    if (!delete_key) return res.status(400).json({ message: "Image key is required" });
+
+    console.log(delete_key);
   try {
     // Delete the image from S3
     console.log("Deleting image from S3");
  //   console.log(key);
-    const deleteParams = { Bucket: BUCKET_NAME, Key: key };
+    const deleteParams = { Bucket: BUCKET_NAME, Key: delete_key };
     console.log("Delete Param = ");
 //    console.log(deleteParams);
 
-//    await s3.send(new DeleteObjectCommand(deleteParams));
+    await s3.send(new DeleteObjectCommand(deleteParams));
     console.log("file deleted from S3");
     // Delete the metadata from DynamoDB
 
@@ -210,7 +265,7 @@ const deleteImage = async (req, res) => {
     const dbDeleteParams = {
       "Key": {
           "qut-username": { "S": "n11543701@qut.edu.au" },
-          "file-key": { "S": key },
+          "file-key": { "S": delete_key },
       },
       "TableName":tableName
     };
@@ -221,7 +276,7 @@ const deleteImage = async (req, res) => {
     await dynamoDB.send(new DeleteItemCommand(dbDeleteParams));
     console.log("file key deleted from database.");
 
-    res.status(200).json({ message: "Image deleted successfully", key });
+    res.status(200).json({ message: "Image deleted successfully", delete_key });
   } catch (error) {
     console.error("Error deleting image:", error);
     res.status(500).json({ message: "Error deleting image", error: error.message });
