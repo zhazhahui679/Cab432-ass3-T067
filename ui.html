@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Upload and Conversion</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Navbar</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="#">Video Transcoding</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="#">Image Transcoding</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Sign up</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container" id="mainContent">
+        <!-- Upload Image Form -->
+        <form id="uploadForm" enctype="multipart/form-data" class="mt-4">
+            <h2>Upload Image</h2>
+            <div class="form-group">
+                <label for="files">Select image(s):</label>
+                <input type="file" id="files" name="files" class="form-control-file" multiple required>
+            </div>
+            <button type="submit" class="btn btn-primary">Upload</button>
+        </form>
+    
+        <!-- Convert Image Form -->
+        <form id="convertForm" class="mt-4">
+            <h2>Convert Image</h2>
+            <div class="form-group">
+                <label for="key">Select Image:</label>
+                <select id="key" name="key" class="form-control" required>
+                    <option value="">Select an image...</option>
+                    <!-- Options will be populated here -->
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="format">Convert to format:</label>
+                <select id="format" name="format" class="form-control" required>
+                    <option value="png">PNG</option>
+                    <option value="jpeg">JPEG</option>
+                    <option value="webp">WEBP</option>
+                    <option value="gif">GIF</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Convert</button>
+        </form>      
+    
+        <!-- Delete Image from S3 Form -->
+        <form id="deleteForm" class="mt-4">
+            <h2>Delete Image from Database</h2>
+            <div class="form-group">
+                <label for="delete_key">Select Image to Delete:</label>
+                <select id="delete_key" name="delete_key" class="form-control" required>
+                    <option value="">Select an image...</option>
+                    <!-- Options will be populated here -->
+                </select>
+            </div>
+            <button type="submit" class="btn btn-danger">Delete</button>
+        </form> 
+    </div>
+</body>
+</html>
