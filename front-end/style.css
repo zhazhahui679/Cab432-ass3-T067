@@ -1,6 +1,13 @@
 /* styles.css */
 
-/* Upload Section */
+/* 重置默认样式 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Header 样式 */
 header {
     display: flex;
     justify-content: space-between;
@@ -11,60 +18,74 @@ header {
     position: fixed;
     top: 0;
     width: 100%;
+    z-index: 1000; /* 确保头部在最上层 */
     box-sizing: border-box;
-  }
-  
-  /* Title */
-  .logo-container {
+}
+
+/* Title */
+.logo-container {
     display: flex;
     align-items: center;
-  }
-  
-  .logo-image {
+}
+
+.logo-image {
     height: 50px;
     margin-right: -20px;
-  }
-  
-  .logo-text {
+}
+
+.logo-text {
     font-size: 24px;
     font-weight: bold;
     transform: translateX(20px);
-  }
-  
-  /* Log in section */
-  nav {
+}
+
+/* Log in section */
+nav {
     display: flex;
     gap: 15px;
     margin-right: 30px;
-  }
-  
-  nav a {
+}
+
+nav a {
     text-decoration: none;
     color: #007bff;
     font-size: 14px;
     padding: 8px 10px; 
     cursor: pointer;
-  }
-  
-  nav a:hover {
+}
+
+nav a:hover {
     background-color: #f0f0f0; 
     border-radius: 5px; 
-  }
-  
-  /* Main content */
-  main {
-    margin-top: 200px;
-    justify-content: center;
-  }
-  
-  h1 {
+}
+
+/* 主内容区域，确保有足够的顶部边距避免被固定头部遮挡 */
+#mainContent {
+    margin-top: 100px; /* 根据 header 的高度调整 */
+}
+
+/* Form 样式 */
+form {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+/* Modal 样式调整，确保模态框在固定头部下方显示 */
+.modal-dialog {
+    margin-top: 100px; /* 与 header 高度一致 */
+}
+
+/* 其他样式保持不变 */
+h1 {
     color: #d9534f;
     font-size: 36px;
     margin-bottom: 30px;
     text-align: center;
-  }
-  
-  .upload-area {
+}
+
+.upload-area {
     background-color: #333;
     margin-left: 10%;
     padding: 50px;
@@ -73,9 +94,9 @@ header {
     min-width: 300px;
     width: 75%;
     text-align: center;
-  }
-  
-  #selectButton {
+}
+
+#selectButton {
     background-color: #d9534f;
     color: white;
     padding: 15px 30px;
@@ -83,20 +104,20 @@ header {
     border-radius: 5px;
     cursor: pointer;
     font-size: 16px;
-  }
-  
-  #selectButton:hover {
+}
+
+#selectButton:hover {
     background-color: #c9302c;
-  }
-  
-  /* File list */
-  .file-list {
+}
+
+/* File list */
+.file-list {
     margin-top: 20px;
     width: 80%;
     margin: 0 auto;
-  }
-  
-  .file-item {
+}
+
+.file-item {
     display: flex;
     flex-direction: column; 
     align-items: flex-start; 
@@ -105,16 +126,16 @@ header {
     background-color: #fff;
     margin-bottom: 20px;
     border-radius: 5px;
-  }
-  
-  .conversion-options {
+}
+
+.conversion-options {
     display: flex;
     align-items: center;
     gap: 10px;
-  }
-  
-  /* Progress bar */
-  .progress-bar {
+}
+
+/* Progress bar */
+.progress-bar {
     width: 100%;
     height: 10px;
     background-color: #ddd;
@@ -122,55 +143,50 @@ header {
     overflow: hidden;
     margin-top: 10px; 
     margin-bottom: 10px;
-  }
-  
-  .progress {
+}
+
+.progress {
     width: 0;
     height: 100%;
-    background-color: rgb(
-      23,
-      130,
-      253
-    ); 
-  }
-  
-  /* File name */
-  .file-name {
+    background-color: rgb(23, 130, 253); 
+}
+
+/* File name */
+.file-name {
     margin-top: 10px;
     font-weight: bold;
-  }
-  
-  /* Cancel button */
-  .cancel-btn {
+}
+
+/* Cancel button */
+.cancel-btn {
     width: 30px;
     height: 30px;
     cursor: pointer;
     margin-top: 5px;
     margin-right: 5px;
     display: inline-block; 
-  }
-  
-  /* Download button */
-  .download-btn {
+}
+
+/* Download button */
+.download-btn {
     width: 30px;
     height: 30px;
     cursor: pointer;
     margin-top: 5px;
     margin-left: 5px;
     display: inline-block; 
-  }
-  
-  select {
+}
+
+select {
     padding: 5px;
     margin-right: 10px;
-  }
-  
-  /* Login and register */
-  /* Modal styles */
-  .modal {
+}
+
+/* Modal styles */
+.modal {
     display: none; /* Hidden by default */
     position: fixed;
-    z-index: 1;
+    z-index: 1001; /* Above the header */
     left: 0;
     top: 0;
     width: 100%;
@@ -178,9 +194,9 @@ header {
     background-color: rgba(0, 0, 0, 0.5); /* Gray transparent background */
     justify-content: center;
     align-items: center;
-  }
-  
-  .modal-content {
+}
+
+.modal-content {
     background-color: white;
     padding: 20px;
     border-radius: 8px;
@@ -190,9 +206,9 @@ header {
     flex-direction: column;
     align-items: center;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  }
-  
-  .modal-content2 {
+}
+
+.modal-content2 {
     background-color: white;
     padding: 20px;
     border-radius: 8px;
@@ -202,9 +218,9 @@ header {
     flex-direction: column;
     align-items: center;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  }
-  
-  .close {
+}
+
+.close {
     position: absolute;
     top: 15px;
     right: 20px;
@@ -212,25 +228,25 @@ header {
     font-size: 24px;
     font-weight: bold;
     cursor: pointer;
-  }
-  
-  .close:hover,
-  .close:focus {
+}
+
+.close:hover,
+.close:focus {
     color: black;
     text-decoration: none;
     cursor: pointer;
-  }
-  
-  /* Form input styles */
-  .modal-content input {
+}
+
+/* Form input styles */
+.modal-content input {
     width: 90%;
     padding: 10px;
     margin: 10px 0;
     border: 1px solid #ddd;
     border-radius: 4px;
-  }
-  
-  .modal-content button {
+}
+
+.modal-content button {
     width: 95%;
     padding: 10px;
     background-color: #007bff;
@@ -240,19 +256,19 @@ header {
     cursor: pointer;
     margin-top: 10px;
     font-size: 16px;
-  }
-  
-  .modal-content button:hover {
+}
+
+.modal-content button:hover {
     background-color: #005a9c;
-  }
-  
-  .format-list {
+}
+
+.format-list {
     margin: 0;
     padding: 0;
     list-style: none;
-  }
-  
-  .format-list-item {
+}
+
+.format-list-item {
     padding: 16px 24px;
     border-block-end: 1px solid rgba(5, 5, 5, 0.06);
     display: flex;
@@ -260,32 +276,32 @@ header {
     justify-content: space-between;
     color: rgba(0, 0, 0, 0.88);
     padding-left: 0;
-  }
-  
-  .format-list-item div {
+}
+
+.format-list-item div {
     display: flex;
     flex-direction: column;
     width: 25%;
-  }
-  
-  .format-list-item .meta {
+}
+
+.format-list-item .meta {
     min-width: 30%;
-  }
-  
-  .progress-wrapper span {
+}
+
+.progress-wrapper span {
     display: block;
-  }
-  
-  .progress-wrapper {
+}
+
+.progress-wrapper {
     position: relative;
     display: inline-block;
     vertical-align: middle;
     background-color: rgba(0, 0, 0, 0.06);
     border-radius: 100px;
     margin-right: 20px;
-  }
-  
-  .progress-wrapper .progress {
+}
+
+.progress-wrapper .progress {
     width: 0;
     height: 6px;
     --progress-percent: 0.91;
@@ -293,53 +309,52 @@ header {
     background: #1677ff;
     border-radius: 100px;
     transition: all 0.3s cubic-bezier(0.78, 0.14, 0.15, 0.86);
-  }
-  
-  .download {
+}
+
+.download {
     text-align: right;
     position: relative;
-  }
-  
-  .progress-child {
+}
+
+.progress-child {
     position: absolute;
     z-index: 1;
     right: -50px;
     top: -8px;
-  }
-  
-  .download a {
+}
+
+.download a {
     color: #1677ff;
     cursor: pointer;
     font-size: 16px;
-  }
-  
-  .download img {
+}
+
+.download img {
     width: 30px;
     position: absolute;
     right: 50px;
     bottom: 20px;
     cursor: pointer;
-  }
-  
-  #videoContent {
+}
+
+#videoContent {
     width: 100%;
     height: 100%;
-  }
-  
-  .login-content {
+}
+
+.login-content {
     margin: 244px auto;
-  }
-  
-  a {
+}
+
+a {
     color: #1677ff;
     cursor: pointer;
     text-decoration: none;
     font-size: 12px;
-  }
-  
-  .tips {
+}
+
+.tips {
     font-size: 14px;
     color: #1677ff;
     margin: 20px 10%;
-  }
-  
+}
