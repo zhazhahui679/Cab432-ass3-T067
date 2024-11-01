@@ -17,4 +17,8 @@ router.get("/image-keys", imageController.getImageKeys);
 // Route for deleting an image
 router.post("/delete", imageController.deleteImage);
 
+// Route for download an image
+router.get("/download/:filename", imageController.downloadImage);
+
+
 module.exports = router;
